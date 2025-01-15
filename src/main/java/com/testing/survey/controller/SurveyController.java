@@ -34,7 +34,7 @@ public class SurveyController {
     }
 
     @GetMapping("/questions")
-    public ResponseEntity<List<QuestionDTO>> getQuestions(@RequestParam Long periodId) {
-        return ResponseEntity.ok(surveyService.getQuestions(periodId));
+    public ResponseEntity<List<QuestionDTO>> getQuestions(@RequestParam Long periodId, @RequestParam Boolean targetYn) {
+        return ResponseEntity.ok(surveyService.getQuestions(periodId, targetYn));
     }
 }

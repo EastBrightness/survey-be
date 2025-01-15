@@ -13,5 +13,6 @@ public class QuestionDTO {
     private Long periodId;
     private String category;
     private String content;
+    private Boolean targetYn;
     private AnswerDTO answers;
 }

@@ -28,6 +28,9 @@ public class Question {
     private String content;
 
     @Column(nullable = false)
+    private Boolean targetYn;
+
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
     @PrePersist

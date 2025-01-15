@@ -9,5 +9,5 @@ import java.util.List;
 // Repository 인터페이스
 @Repository
 public interface QuestionRepository extends JpaRepository<Question, Long> {
-    List<Question> findByPeriodIdOrderById(Long periodId);
+    List<Question> findByPeriodIdAndTargetYnOrderById(Long periodId, Boolean targetYn);
 }

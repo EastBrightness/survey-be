@@ -26,6 +26,7 @@ public class SurveyService {
         question.setPeriodId(dto.getPeriodId());
         question.setCategory(dto.getCategory());
         question.setContent(dto.getContent());
+        question.setTargetYn(dto.getTargetYn());
 
         Question savedQuestion = questionRepository.save(question);
 
@@ -51,6 +52,7 @@ public class SurveyService {
 
         question.setCategory(dto.getCategory());
         question.setContent(dto.getContent());
+        question.setTargetYn(dto.getTargetYn());
 
         Question updatedQuestion = questionRepository.save(question);
 
@@ -76,8 +78,8 @@ public class SurveyService {
         questionRepository.deleteById(id);
     }
 
-    public List<QuestionDTO> getQuestions(Long periodId) {
-        List<Question> questions = questionRepository.findByPeriodIdOrderById(periodId);
+    public List<QuestionDTO> getQuestions(Long periodId, Boolean targetYn) {
+        List<Question> questions = questionRepository.findByPeriodIdAndTargetYnOrderById(periodId, targetYn);
         return questions.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -89,6 +91,7 @@ public class SurveyService {
         dto.setPeriodId(question.getPeriodId());
         dto.setCategory(question.getCategory());
         dto.setContent(question.getContent());
+        dto.setTargetYn(question.getTargetYn());
 
         answerRepository.findByPeriodIdAndQuestionId(question.getPeriodId(), question.getId())
                 .ifPresent(answer -> {
