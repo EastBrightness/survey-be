@@ -57,5 +57,8 @@ public class EmployeeTemp {
     private Boolean completedSelf = false;  // 자가평가 완료
 
     @Column(name = "completed_others")
-    private Boolean completedOthers = false;  // 타인평가 완료
+    private Boolean completedOthers = false;
+
+    @Column(name = "organization_id")
+    private Long organizationId;// 타인평가 완료
 }

@@ -29,4 +29,14 @@ public interface EmployeeTempRepository extends JpaRepository<EmployeeTemp, Long
 
     // 활성 상태의 평가 대상자 조회
     List<EmployeeTemp> findByOthersTestedTrueAndIsDeletedFalse();
+
+    List<EmployeeTemp> findByOrganizationIdAndIsDeletedFalse(Long organizationId);
+
+    @Query("SELECT o.email FROM OcTable o WHERE o.employeeNumber = :employeeNumber")
+    String findEmailByEmployeeNumber(@Param("employeeNumber") String employeeNumber);
+
+
+    List<EmployeeTemp> findAllByIsDeletedFalse();
+
 }
+
