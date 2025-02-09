@@ -16,4 +16,7 @@ public interface OrganizationTempRepository extends JpaRepository<OrganizationTe
 
     List<OrganizationTemp> findAllByIsDeletedFalse();
     boolean existsByoCode(String oCode);
+
+    List<OrganizationTemp> findByIsDeletedTrueOrderByFullNameAsc();
+    Optional<OrganizationTemp> findByoCode(String oCode);
 }

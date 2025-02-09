@@ -12,10 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -118,4 +115,24 @@ public class EmployeeTempService {
 
         return dto;
     }
+
+    public List<EmployeeTemp> searchEmployeesByName(String name) {
+        return employeeTempRepository.findByPersonNameContainingOrderByOrganizationNameAsc(name);
+    }
+
+    @Transactional
+    public void updateEmployee(String employeeNumber, EmployeeTemp updatedEmployee) {
+        EmployeeTemp employee = employeeTempRepository.findByEmployeeNumber(employeeNumber)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        // Update only allowed fields
+        employee.setOrganizationName(updatedEmployee.getOrganizationName());
+        employee.setIsDeleted(updatedEmployee.getIsDeleted());
+        employee.setOthersTested(updatedEmployee.getOthersTested());
+        employee.setOthersTester(updatedEmployee.getOthersTester());
+
+        employeeTempRepository.save(employee);
+    }
+
+
 }

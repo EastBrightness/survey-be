@@ -27,9 +27,22 @@ public class OrganizationTempService {
         return result;
     }
 
+
+    public List<OrganizationTemp> getDeletedOrganizations() {
+        return organizationTempRepository.findByIsDeletedTrueOrderByFullNameAsc();
+    }
+
+    @Transactional
+    public void restoreOrganization(String oCode) {
+        OrganizationTemp org = organizationTempRepository.findByoCode(oCode)
+                .orElseThrow(() -> new RuntimeException("Organization not found"));
+        org.setIsDeleted(false);
+        organizationTempRepository.save(org);
+    }
+
     @Transactional
     public void toggleOrganizationStatus(String oCode, boolean isDeleted) {
-        OrganizationTemp org = organizationTempRepository.findByoCodeAndIsDeletedFalse(oCode)
+        OrganizationTemp org = organizationTempRepository.findByoCode(oCode)
                 .orElseThrow(() -> new RuntimeException("Organization not found"));
         org.setIsDeleted(isDeleted);
         organizationTempRepository.save(org);

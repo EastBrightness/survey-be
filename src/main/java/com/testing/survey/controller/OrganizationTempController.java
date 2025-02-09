@@ -1,6 +1,7 @@
 package com.testing.survey.controller;
 
 import com.testing.survey.dto.OrganizationTempDTO;
+import com.testing.survey.entity.temp.OrganizationTemp;
 import com.testing.survey.service.OrganizationTempService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,18 @@ public class OrganizationTempController {
         return ResponseEntity.ok(organizationService.getOrganizationTree(rootOCode));
     }
 
+
+    @GetMapping("/deleted")
+    public ResponseEntity<List<OrganizationTemp>> getDeletedOrganizations() {
+        return ResponseEntity.ok(organizationService.getDeletedOrganizations());
+    }
+
+    @PostMapping("/{oCode}/restore")
+    public ResponseEntity<Void> restoreOrganization(@PathVariable String oCode) {
+        organizationService.restoreOrganization(oCode);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/{oCode}/toggle-status")
     public ResponseEntity<Void> toggleOrganizationStatus(
             @PathVariable String oCode,
@@ -33,4 +46,5 @@ public class OrganizationTempController {
         organizationService.deleteOrganizations(organizationNames);
         return ResponseEntity.ok().build();
     }
+
 }

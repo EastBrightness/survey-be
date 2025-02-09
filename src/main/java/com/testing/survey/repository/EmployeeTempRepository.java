@@ -38,5 +38,9 @@ public interface EmployeeTempRepository extends JpaRepository<EmployeeTemp, Long
 
     List<EmployeeTemp> findAllByIsDeletedFalse();
 
+    List<EmployeeTemp> findByPersonNameContainingOrderByOrganizationNameAsc(String name);
+
+
+
 }
 

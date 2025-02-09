@@ -1,6 +1,7 @@
 package com.testing.survey.controller;
 
 import com.testing.survey.dto.EmployeeTempDTO;
+import com.testing.survey.entity.temp.EmployeeTemp;
 import com.testing.survey.service.EmployeeTempService;
 import com.testing.survey.service.OrganizationService;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,11 @@ public class EmployeeTempController {
     public ResponseEntity<List<EmployeeTempDTO>> getEmployeesByOrganization(
             @PathVariable String orgName) {
         return ResponseEntity.ok(employeeService.getEmployeesByOrganization(orgName));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<EmployeeTemp>> searchEmployees(@RequestParam String name) {
+        return ResponseEntity.ok(employeeService.searchEmployeesByName(name));
     }
 
     @PutMapping("/{employeeNumber}")
