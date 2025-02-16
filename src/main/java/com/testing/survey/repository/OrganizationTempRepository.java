@@ -12,6 +12,8 @@ public interface OrganizationTempRepository extends JpaRepository<OrganizationTe
     List<OrganizationTemp> findByUpCodeAndIsDeletedFalse(String upCode);
     Optional<OrganizationTemp> findByoCodeAndIsDeletedFalse(String oCode);
 
+    List<OrganizationTemp> findByUpCode(String upCode);
+
     List<OrganizationTemp> findByFullNameIn(List<String> fullNames);
 
     List<OrganizationTemp> findAllByIsDeletedFalse();

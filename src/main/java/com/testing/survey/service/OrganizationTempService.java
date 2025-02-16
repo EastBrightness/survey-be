@@ -23,7 +23,7 @@ public class OrganizationTempService {
 
     public List<OrganizationTempDTO> getOrganizationTree(String rootOCode) {
         List<OrganizationTempDTO> result = new ArrayList<>();
-        buildOrgTree(rootOCode, result);
+        buildOrgTree(rootOCode, result, true);
         return result;
     }
 
@@ -66,15 +66,17 @@ public class OrganizationTempService {
     }
 
 
-    private void buildOrgTree(String currentOCode, List<OrganizationTempDTO> result) {
-        List<OrganizationTemp> children = organizationTempRepository.findByUpCodeAndIsDeletedFalse(currentOCode);
+    private void buildOrgTree(String currentOCode, List<OrganizationTempDTO> result, boolean includeDeleted) {
+        List<OrganizationTemp> children = includeDeleted
+                ? organizationTempRepository.findByUpCode(currentOCode)
+                : organizationTempRepository.findByUpCodeAndIsDeletedFalse(currentOCode);
 
         for (OrganizationTemp org : children) {
             OrganizationTempDTO dto = convertToDTO(org);
             List<EmployeeTemp> employees = employeeTempRepository.findEligibleEmployees(org.getFullName());
             dto.setEmployeeCount(employees.size());
             result.add(dto);
-            buildOrgTree(org.getOCode(), result);
+            buildOrgTree(org.getOCode(), result, true);
         }
     }
 
