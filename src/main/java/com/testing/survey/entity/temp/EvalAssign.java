@@ -19,4 +19,7 @@ public class EvalAssign {
 
     @Column(name = "tester")
     private String tester;  // 평가자의 사원번호
+
+    @Column(name = "is_completed")
+    private Boolean isCompleted = false;
 }

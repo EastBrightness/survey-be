@@ -19,6 +19,12 @@ public interface EmployeeTempRepository extends JpaRepository<EmployeeTemp, Long
             "AND e.isDeleted = false")
     List<EmployeeTemp> findEligibleEmployees(@Param("orgName") String orgName);
 
+    @Query("SELECT DISTINCT e.organizationName FROM EmployeeTemp e " +
+            "WHERE e.organizationName LIKE CONCAT(:departmentName, '%') " +
+            "AND e.isDeleted = false " +
+            "ORDER BY e.organizationName")
+    List<String> findDistinctOrganizationsByDepartment(@Param("departmentName") String departmentName);
+
     List<EmployeeTemp> findByOrganizationNameIn(List<String> organizationNames);
 
     List<EmployeeTemp> findByOthersTestedTrue();
@@ -39,6 +45,7 @@ public interface EmployeeTempRepository extends JpaRepository<EmployeeTemp, Long
     List<EmployeeTemp> findAllByIsDeletedFalse();
 
     List<EmployeeTemp> findByPersonNameContainingOrderByOrganizationNameAsc(String name);
+
 
 
 
