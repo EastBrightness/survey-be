@@ -35,4 +35,28 @@ public class EvalAssignService {
         BeanUtils.copyProperties(entity, dto);
         return dto;
     }
+
+
+    // 추가: 평가 완료 상태 업데이트
+    @Transactional
+    public void updateCompletionStatus(String tester, String tested, boolean completed) {
+        EvalAssign assignment = evalAssignRepository.findByTesterAndTested(tester, tested)
+                .orElseThrow(() -> new RuntimeException("평가 할당 정보를 찾을 수 없습니다."));
+        assignment.setIsCompleted(completed);
+        evalAssignRepository.save(assignment);
+    }
+
+    // 추가: 평가자의 모든 평가가 완료되었는지 확인
+    public boolean checkAllEvaluationsCompleted(String tester) {
+        List<EvalAssign> assignments = evalAssignRepository.findByTester(tester);
+        return !assignments.isEmpty() &&
+                assignments.stream().allMatch(EvalAssign::getIsCompleted);
+    }
+
+    public List<EvalAssignDTO> getAssignmentsByTester(String tester) {
+        return evalAssignRepository.findByTester(tester).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+
+    }
 }

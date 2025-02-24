@@ -21,6 +21,12 @@ public class EvalAssignController {
         return ResponseEntity.ok(evalAssignService.getAssignmentsByTested(tested));
     }
 
+    @GetMapping("/tester/{tester}")
+    public ResponseEntity<List<EvalAssignDTO>> getAssignmentsByTester(
+            @PathVariable String tester) {
+        return ResponseEntity.ok(evalAssignService.getAssignmentsByTester(tester));
+    }
+
     @DeleteMapping("/tested/{tested}")
     public ResponseEntity<Void> deleteAssignments(@PathVariable String tested) {
         evalAssignService.deleteAssignments(tested);

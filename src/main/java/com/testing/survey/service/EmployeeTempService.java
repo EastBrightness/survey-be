@@ -134,5 +134,10 @@ public class EmployeeTempService {
         employeeTempRepository.save(employee);
     }
 
+    public Optional<EmployeeTempDTO> findByEmployeeNumber(String employeeNumber) {
+        return employeeTempRepository.findByEmployeeNumber(employeeNumber)
+                .map(this::convertToDTO);
+    }
+
 
 }

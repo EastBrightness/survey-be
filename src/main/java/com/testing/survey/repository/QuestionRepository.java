@@ -10,4 +10,7 @@ import java.util.List;
 @Repository
 public interface QuestionRepository extends JpaRepository<Question, Long> {
     List<Question> findByPeriodIdAndTargetYnOrderById(Long periodId, Boolean targetYn);
+
+    List<Question> findByPeriodIdAndTargetYn(Long periodId, Boolean targetYn);
+
 }

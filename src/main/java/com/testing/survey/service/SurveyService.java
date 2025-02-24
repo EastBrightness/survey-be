@@ -1,11 +1,12 @@
 package com.testing.survey.service;
 
+import com.testing.survey.dto.*;
 import com.testing.survey.entity.Answer;
-import com.testing.survey.dto.AnswerDTO;
 import com.testing.survey.entity.Question;
-import com.testing.survey.dto.QuestionDTO;
+import com.testing.survey.entity.SurveyResponse;
 import com.testing.survey.repository.AnswerRepository;
 import com.testing.survey.repository.QuestionRepository;
+import com.testing.survey.repository.SurveyResponseRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,9 @@ import java.util.stream.Collectors;
 public class SurveyService {
     private final QuestionRepository questionRepository;
     private final AnswerRepository answerRepository;
+    private final SurveyResponseRepository surveyResponseRepository;
+    private final EmployeeTempService employeeTempService;
+    private final EvalAssignService evalAssignService;
 
     public QuestionDTO createQuestion(QuestionDTO dto) {
         Question question = new Question();
@@ -108,5 +112,55 @@ public class SurveyService {
                 });
 
         return dto;
+    }
+
+    public void processSurveySubmission(SurveySubmissionDTO submission,
+                                        String respondentNumber,
+                                        Long periodId) {
+        boolean isSelfEvaluation = "SELF".equals(submission.getEvaluationType());
+
+        // 응답 저장
+        for (SurveyResponseDTO response : submission.getResponses()) {
+            if (response.getSelectedAnswer() != null) {  // 선택된 응답만 저장
+                SurveyResponse surveyResponse = new SurveyResponse();
+                surveyResponse.setPeriodId(periodId);
+                surveyResponse.setQuestionId(response.getQuestionId());
+                surveyResponse.setRespondentNumber(respondentNumber);
+                surveyResponse.setSelectedAnswer(response.getSelectedAnswer());
+                surveyResponse.setTextAnswer(response.getTextAnswer());
+                surveyResponse.setEvaluationType(isSelfEvaluation ?
+                        SurveyResponse.EvaluationType.SELF : SurveyResponse.EvaluationType.OTHERS);
+
+                if (!isSelfEvaluation) {
+                    surveyResponse.setTestedNumber(response.getTestedNumber());
+                }
+
+                surveyResponseRepository.save(surveyResponse);
+            }
+        }
+
+        // 완료 상태 업데이트
+        if (isSelfEvaluation) {
+            EmployeeTempDTO employeeDTO = new EmployeeTempDTO();
+            employeeDTO.setCompletedSelf(true);
+            employeeTempService.updateEmployee(respondentNumber, employeeDTO);
+        } else {
+            // 타인평가 완료 처리
+            updateOthersEvaluationStatus(respondentNumber,
+                    submission.getResponses().get(0).getTestedNumber());
+        }
+    }
+
+    private void updateOthersEvaluationStatus(String respondentNumber, String testedNumber) {
+        // 해당 평가 완료 처리
+        evalAssignService.updateCompletionStatus(respondentNumber, testedNumber, true);
+
+        // 모든 할당된 평가가 완료되었는지 확인
+        boolean allCompleted = evalAssignService.checkAllEvaluationsCompleted(respondentNumber);
+        if (allCompleted) {
+            EmployeeTempDTO employeeDTO = new EmployeeTempDTO();
+            employeeDTO.setCompletedOthers(true);
+            employeeTempService.updateEmployee(respondentNumber, employeeDTO);
+        }
     }
 }

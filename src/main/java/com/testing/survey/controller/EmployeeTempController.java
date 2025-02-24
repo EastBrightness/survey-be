@@ -48,4 +48,20 @@ public class EmployeeTempController {
 //        organizationService.
         return ResponseEntity.ok().build();
     }
+
+    // 직원 단일 조회 엔드포인트 추가
+    @GetMapping("only/{employeeNumber}")
+    public ResponseEntity<EmployeeTempDTO> getEmployee(@PathVariable String employeeNumber) {
+        return employeeService.findByEmployeeNumber(employeeNumber)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/tested/{employeeNumber}")
+    public ResponseEntity<EmployeeTempDTO> getTestedEmployee(@PathVariable String employeeNumber) {
+        return employeeService.findByEmployeeNumber(employeeNumber)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
 }
