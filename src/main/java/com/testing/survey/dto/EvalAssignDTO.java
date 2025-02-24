@@ -10,4 +10,5 @@ public class EvalAssignDTO {
     private Long id;
     private String tested;
     private String tester;
+    private Boolean isCompleted = false;
 }

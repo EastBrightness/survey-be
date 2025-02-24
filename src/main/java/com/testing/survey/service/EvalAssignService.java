@@ -19,8 +19,10 @@ public class EvalAssignService {
     private final EvalAssignRepository evalAssignRepository;
     private final EmployeeTempRepository employeeTempRepository;
 
+    @Transactional(readOnly = true)
     public List<EvalAssignDTO> getAssignmentsByTested(String tested) {
-        return evalAssignRepository.findByTested(tested).stream()
+        List<EvalAssign> assignments = evalAssignRepository.findByTested(tested);
+        return assignments.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
@@ -30,9 +32,12 @@ public class EvalAssignService {
         evalAssignRepository.deleteByTested(tested);
     }
 
-    private EvalAssignDTO convertToDTO(EvalAssign entity) {
+    private EvalAssignDTO convertToDTO(EvalAssign evalAssign) {
         EvalAssignDTO dto = new EvalAssignDTO();
-        BeanUtils.copyProperties(entity, dto);
+        dto.setId(evalAssign.getId());
+        dto.setTested(evalAssign.getTested());
+        dto.setTester(evalAssign.getTester());
+        dto.setIsCompleted(evalAssign.getIsCompleted());
         return dto;
     }
 
@@ -53,10 +58,22 @@ public class EvalAssignService {
                 assignments.stream().allMatch(EvalAssign::getIsCompleted);
     }
 
+
+    @Transactional(readOnly = true)
     public List<EvalAssignDTO> getAssignmentsByTester(String tester) {
-        return evalAssignRepository.findByTester(tester).stream()
+        List<EvalAssign> assignments = evalAssignRepository.findByTester(tester);
+        return assignments.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
-
     }
+
+    @Transactional
+    public void updateAssignmentStatus(String tester, String tested, boolean isCompleted) {
+        evalAssignRepository.findByTesterAndTested(tester, tested)
+                .ifPresent(assignment -> {
+                    assignment.setIsCompleted(isCompleted);
+                    evalAssignRepository.save(assignment);
+                });
+    }
+
 }

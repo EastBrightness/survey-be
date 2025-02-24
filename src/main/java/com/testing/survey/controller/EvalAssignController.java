@@ -21,6 +21,15 @@ public class EvalAssignController {
         return ResponseEntity.ok(evalAssignService.getAssignmentsByTested(tested));
     }
 
+    @PutMapping("/{tester}/{tested}")
+    public ResponseEntity<Void> updateAssignmentStatus(
+            @PathVariable String tester,
+            @PathVariable String tested,
+            @RequestParam boolean isCompleted) {
+        evalAssignService.updateAssignmentStatus(tester, tested, isCompleted);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/tester/{tester}")
     public ResponseEntity<List<EvalAssignDTO>> getAssignmentsByTester(
             @PathVariable String tester) {
