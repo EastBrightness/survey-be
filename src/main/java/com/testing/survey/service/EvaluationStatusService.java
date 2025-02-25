@@ -21,13 +21,18 @@ public class EvaluationStatusService {
     private final EvalAssignRepository evalAssignRepository;
 
     public DepartmentStatusDTO getDepartmentStatus(String departmentName) {
-        List<EmployeeTemp> employees = employeeRepository.findByOrganizationNameAndIsDeletedFalse(departmentName);
+        // Get all organization names that start with the departmentName (including the department itself)
+        List<String> allOrganizations = employeeRepository.findDistinctOrganizationsByDepartment(departmentName);
 
-        long totalSelfCount = employees.stream().filter(e -> e.getSelfYn()).count();
-        long completedSelfCount = employees.stream().filter(e -> e.getCompletedSelf()).count();
+        // Get all employees in these organizations
+        List<EmployeeTemp> allEmployees = employeeRepository.findByOrganizationNameInAndIsDeletedFalse(allOrganizations);
 
-        long totalOthersCount = employees.stream().filter(e -> e.getOthersTested()).count();
-        long completedOthersCount = employees.stream().filter(e -> e.getCompletedOthers()).count();
+        // Count statistics
+        long totalSelfCount = allEmployees.stream().filter(e -> e.getSelfYn()).count();
+        long completedSelfCount = allEmployees.stream().filter(e -> e.getCompletedSelf()).count();
+
+        long totalOthersCount = allEmployees.stream().filter(e -> e.getOthersTester()).count();
+        long completedOthersCount = allEmployees.stream().filter(e -> e.getCompletedOthers()).count();
 
         return DepartmentStatusDTO.builder()
                 .departmentName(departmentName)
@@ -35,6 +40,12 @@ public class EvaluationStatusService {
                 .selfEvaluationRemainRate(calculateRate(totalSelfCount - completedSelfCount, totalSelfCount))
                 .otherEvaluationRate(calculateRate(completedOthersCount, totalOthersCount))
                 .otherEvaluationRemainRate(calculateRate(totalOthersCount - completedOthersCount, totalOthersCount))
+                .totalSelfCount(totalSelfCount)
+                .completedSelfCount(completedSelfCount)
+                .remainingSelfCount(totalSelfCount - completedSelfCount)
+                .totalOthersCount(totalOthersCount)
+                .completedOthersCount(completedOthersCount)
+                .remainingOthersCount(totalOthersCount - completedOthersCount)
                 .build();
     }
 
