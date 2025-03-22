@@ -61,4 +61,7 @@ public class EmployeeTemp {
 
     @Column(name = "organization_id")
     private Long organizationId;// 타인평가 완료
+
+    @Column(name = "saw_result")
+    private Boolean sawResult = false;
 }

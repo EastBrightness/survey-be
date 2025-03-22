@@ -41,6 +41,15 @@ public class SurveyResponse {
     @Column(name = "text_answer", length = 1000)
     private String textAnswer;
 
+    @Column(name = "tested_rank")
+    private String testedRank;
+
+    @Column(name = "category")
+    private String category;
+
+    @Column(name = "respondent_score")
+    private Integer respondentScore;
+
     public enum EvaluationType {
         SELF, OTHERS
     }

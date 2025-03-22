@@ -2,6 +2,7 @@ package com.testing.survey.repository;
 
 import com.testing.survey.entity.temp.EmployeeTemp;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -48,6 +49,9 @@ public interface EmployeeTempRepository extends JpaRepository<EmployeeTemp, Long
 
     List<EmployeeTemp> findByOrganizationNameInAndIsDeletedFalse(List<String> organizationNames);
 
+    @Modifying
+    @Query("UPDATE EmployeeTemp e SET e.sawResult = true WHERE e.employeeNumber = :employeeNumber")
+    void updateSawResultByEmployeeNumber(@Param("employeeNumber") String employeeNumber);
 
 
 }
