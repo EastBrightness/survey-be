@@ -16,10 +16,11 @@ public class SurveyResultController {
     @Autowired
     private SurveyResultService surveyResultService;
 
-    @GetMapping("/result/{employeeNumber}")
+    @GetMapping("/result/{employeeNumber}/{periodId}")
     public ResponseEntity<SurveyResultResponseDTO> getSurveyResult(
-            @PathVariable String employeeNumber) {
-        SurveyResultResponseDTO result = surveyResultService.getSurveyResult(employeeNumber);
+            @PathVariable String employeeNumber,
+            @PathVariable Long periodId) {
+        SurveyResultResponseDTO result = surveyResultService.getSurveyResult(employeeNumber, periodId);
         return ResponseEntity.ok(result);
     }
 }

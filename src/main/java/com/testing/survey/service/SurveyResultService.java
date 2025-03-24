@@ -22,11 +22,8 @@ public class SurveyResultService {
     @Autowired
     private EmployeeTempRepository employeeTempRepository;
 
-    // For demonstration, we're setting these values as constants
-    private final Long currentPeriodId = 1L;
-
     @Transactional
-    public SurveyResultResponseDTO getSurveyResult(String employeeNumber) {
+    public SurveyResultResponseDTO getSurveyResult(String employeeNumber, Long periodId) {
         // Mark result as viewed
         employeeTempRepository.updateSawResultByEmployeeNumber(employeeNumber);
 
@@ -34,16 +31,15 @@ public class SurveyResultService {
         EmployeeTemp employee = employeeTempRepository.findByEmployeeNumber(employeeNumber)
                 .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
 
-// In SurveyResultService
-// Get self-evaluation scores
+        // Get self-evaluation scores
         List<SurveyResponse> selfResponses = surveyResponseRepository
                 .findByPeriodIdAndRespondentNumberAndEvaluationType(
-                        currentPeriodId, employeeNumber, SurveyResponse.EvaluationType.SELF);
+                        periodId, employeeNumber, SurveyResponse.EvaluationType.SELF);
 
-// Get others-evaluation scores
+        // Get others-evaluation scores
         List<SurveyResponse> othersResponses = surveyResponseRepository
                 .findByPeriodIdAndTestedNumberAndEvaluationType(
-                        currentPeriodId, employeeNumber, SurveyResponse.EvaluationType.OTHERS);
+                        periodId, employeeNumber, SurveyResponse.EvaluationType.OTHERS);
 
         // Calculate self-evaluation total score
         double selfEvaluationScore = selfResponses.stream()
@@ -66,10 +62,11 @@ public class SurveyResultService {
         double totalScore = selfEvaluationScore + othersEvaluationScore;
 
         // Calculate percentiles
-        double overallPercentile = calculateOverallPercentile(employeeNumber, totalScore);
+        double overallPercentile = calculateOverallPercentile(employeeNumber, totalScore, periodId);
         double sameRankPercentile = calculateSameRankPercentile(employeeNumber,
                 totalScore,
-                employee.getGradeName());
+                employee.getGradeName(),
+                periodId);
 
         // Calculate scores by category
         Map<String, Double> selfScoresByCategory = calculateScoresByCategory(selfResponses);
@@ -77,7 +74,7 @@ public class SurveyResultService {
 
         // Get text feedback
         List<String> textFeedback = surveyResponseRepository
-                .findDistinctTextAnswersByPeriodIdAndTestedNumber(currentPeriodId, employeeNumber);
+                .findDistinctTextAnswersByPeriodIdAndTestedNumber(periodId, employeeNumber);
 
         // Build the response DTO
         return SurveyResultResponseDTO.builder()
@@ -94,9 +91,9 @@ public class SurveyResultService {
                 .build();
     }
 
-    private double calculateOverallPercentile(String employeeNumber, double employeeScore) {
-        List<Object[]> allScores = surveyResponseRepository.findTotalScoresByPeriodId(currentPeriodId);
-
+    // Update other methods to accept periodId parameter
+    private double calculateOverallPercentile(String employeeNumber, double employeeScore, Long periodId) {
+        List<Object[]> allScores = surveyResponseRepository.findTotalScoresByPeriodId(periodId);
         // Convert to map of employee number to score
         Map<String, Double> employeeScores = new HashMap<>();
         for (Object[] score : allScores) {
@@ -109,7 +106,6 @@ public class SurveyResultService {
                 System.err.println("Warning: Null employee number encountered");
             }
         }
-
 
         // Count how many employees have lower scores
         long lowerScoreCount = employeeScores.entrySet().stream()
@@ -126,9 +122,9 @@ public class SurveyResultService {
         return (double) lowerScoreCount / (totalEmployees - 1) * 100;
     }
 
-    private double calculateSameRankPercentile(String employeeNumber, double employeeScore, String rank) {
+    private double calculateSameRankPercentile(String employeeNumber, double employeeScore, String rank, Long periodId) {
         List<Object[]> sameRankScores = surveyResponseRepository
-                .findTotalScoresByPeriodIdAndRank(currentPeriodId, rank);
+                .findTotalScoresByPeriodIdAndRank(periodId, rank);
 
         // Convert to map of employee number to score
         Map<String, Double> employeeScores = new ConcurrentHashMap<>();
@@ -153,6 +149,7 @@ public class SurveyResultService {
         return (double) lowerScoreCount / (totalSameRankEmployees - 1) * 100;
     }
 
+    // These methods don't need periodId parameter
     private Map<String, Double> calculateScoresByCategory(List<SurveyResponse> responses) {
         return responses.stream()
                 .collect(Collectors.groupingBy(
