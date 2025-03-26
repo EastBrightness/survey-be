@@ -64,4 +64,11 @@ public class EmployeeTemp {
 
     @Column(name = "saw_result")
     private Boolean sawResult = false;
+
+    @Column(name = "score_self")
+    private Double scoreSelf;
+
+    @Column(name = "score_others")
+    private Double scoreOthers;
+
 }

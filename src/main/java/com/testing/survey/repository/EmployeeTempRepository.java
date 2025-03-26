@@ -54,5 +54,14 @@ public interface EmployeeTempRepository extends JpaRepository<EmployeeTemp, Long
     void updateSawResultByEmployeeNumber(@Param("employeeNumber") String employeeNumber);
 
 
+    @Modifying
+    @Query("UPDATE EmployeeTemp e SET e.scoreSelf = :selfScore, e.scoreOthers = :othersScore WHERE e.employeeNumber = :employeeNumber")
+    void updateEmployeeScores(
+            @Param("employeeNumber") String employeeNumber,
+            @Param("selfScore") Double selfScore,
+            @Param("othersScore") Double othersScore
+    );
+
+
 }
 

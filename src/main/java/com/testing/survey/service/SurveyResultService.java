@@ -76,6 +76,13 @@ public class SurveyResultService {
         List<String> textFeedback = surveyResponseRepository
                 .findDistinctTextAnswersByPeriodIdAndTestedNumber(periodId, employeeNumber);
 
+
+        employeeTempRepository.updateEmployeeScores(
+                employeeNumber,
+                selfEvaluationScore,
+                othersEvaluationScore
+        );
+
         // Build the response DTO
         return SurveyResultResponseDTO.builder()
                 .employeeName(employee.getPersonName())
@@ -119,7 +126,7 @@ public class SurveyResultService {
             return 100.0; // If there's only one employee, they're at the 100th percentile
         }
 
-        return (double) lowerScoreCount / (totalEmployees - 1) * 100;
+        return (double) ( 1 - lowerScoreCount / (totalEmployees - 1)) * 100;
     }
 
     private double calculateSameRankPercentile(String employeeNumber, double employeeScore, String rank, Long periodId) {
