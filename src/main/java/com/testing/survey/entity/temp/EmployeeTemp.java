@@ -24,7 +24,10 @@ public class EmployeeTemp {
     private String personName;
 
     @Column(name = "type")
-    private String type;  // 현장직
+    private String personTypeName;  // 현장직
+
+    @Column(name = "sex")
+    private String sex;
 
     @Column(name = "organization_name")
     private String organizationName;  // 부서명
@@ -70,5 +73,8 @@ public class EmployeeTemp {
 
     @Column(name = "score_others")
     private Double scoreOthers;
+
+    @Column(name = "period_id")
+    private Long periodId;
 
 }
