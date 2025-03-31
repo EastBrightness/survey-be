@@ -19,7 +19,19 @@ public interface StatisticsSurveyResponseRepository extends JpaRepository<Survey
             "ORDER BY sr.questionId, sr.evaluationType")
     List<Object[]> calculateQuestionStatisticsBothTypes(@Param("periodId") Long periodId);
 
-    @Query("SELECT sr FROM SurveyResponse sr " +
+    @Query("SELECT sr.questionId, sr.evaluationType, AVG(sr.respondentScore) " +
+            "FROM SurveyResponse sr " +
+            "JOIN EmployeeTemp e ON sr.respondentNumber = e.employeeNumber " +
+            "JOIN OrganizationTemp o ON e.organizationId = o.id " +
+            "WHERE sr.periodId = :periodId " +
+            "AND o.oCode IN :orgCodes " +
+            "AND (sr.evaluationType = 'SELF' OR sr.evaluationType = 'OTHERS') " +
+            "GROUP BY sr.questionId, sr.evaluationType " +
+            "ORDER BY sr.questionId, sr.evaluationType")
+    List<Object[]> calculateQuestionStatisticsByOrganizations(
+            @Param("periodId") Long periodId,
+            @Param("orgCodes") List<String> orgCodes
+    );    @Query("SELECT sr FROM SurveyResponse sr " +
             "WHERE sr.periodId = :periodId " +
             "AND (sr.evaluationType = 'SELF' OR sr.evaluationType = 'OTHERS') " +
             "ORDER BY sr.questionId")

@@ -15,10 +15,10 @@ import java.util.Map;
 public class ExcelUtility {
     public static byte[] generateEvaluationStatisticsExcel(
             List<EmployeeTemp> employees,
-            List<Integer> selfQuestionIds,
-            List<Integer> othersQuestionIds,
-            Map<String, Map<Integer, Integer>> selfResponsesByEmployee,
-            Map<String, Map<Integer, Integer>> othersResponsesByEmployee,
+            List<Long> selfQuestionIds,
+            List<Long> othersQuestionIds,
+            Map<String, Map<Long, Integer>> selfResponsesByEmployee,
+            Map<String, Map<Long, Integer>> othersResponsesByEmployee,
             Map<String, Map<String, Double>> questionStats,
             StatisticsRequestDTO request
     ) {
@@ -32,7 +32,7 @@ public class ExcelUtility {
 
             // 헤더 생성
             String[] baseHeaders = {
-                    "순번", "소속", "신분", "통계계급", "성명", "군번", "성별", "종합실시율"
+                    "순번", "소속", "신분", "통계계급", "성명", "사원번호", "성별", "종합실시율"
             };
 
             // 자가평가 문항 헤더 생성
@@ -93,7 +93,7 @@ public class ExcelUtility {
                 Cell cellName = row.createCell(cellIndex++);
                 cellName.setCellValue(emp.getPersonName());
 
-                // 군번
+                // 사원번호
                 Cell cellEmpNum = row.createCell(cellIndex++);
                 cellEmpNum.setCellValue(emp.getEmployeeNumber());
 
@@ -122,10 +122,10 @@ public class ExcelUtility {
                 cellRate.setCellValue(String.format("%.1f%%", completionRate));
 
                 // 자가평가 문항 점수
-                Map<Integer, Integer> selfResponses = selfResponsesByEmployee.getOrDefault(emp.getEmployeeNumber(), Map.of());
+                Map<Long, Integer> selfResponses = selfResponsesByEmployee.getOrDefault(emp.getEmployeeNumber(), Map.of());
                 for (int j = 0; j < selfQuestionIds.size(); j++) {
                     Cell cellSelfQ = row.createCell(cellIndex++);
-                    Integer questionId = selfQuestionIds.get(j);
+                    Long questionId = selfQuestionIds.get(j);
                     Integer score = selfResponses.get(questionId);
                     if (score != null) {
                         cellSelfQ.setCellValue(score);
@@ -135,10 +135,10 @@ public class ExcelUtility {
                 }
 
                 // 타인평가 문항 점수
-                Map<Integer, Integer> othersResponses = othersResponsesByEmployee.getOrDefault(emp.getEmployeeNumber(), Map.of());
+                Map<Long, Integer> othersResponses = othersResponsesByEmployee.getOrDefault(emp.getEmployeeNumber(), Map.of());
                 for (int j = 0; j < othersQuestionIds.size(); j++) {
                     Cell cellOthersQ = row.createCell(cellIndex++);
-                    Integer questionId = othersQuestionIds.get(j);
+                    Long questionId = othersQuestionIds.get(j);
                     Integer score = othersResponses.get(questionId);
                     if (score != null) {
                         cellOthersQ.setCellValue(score);
