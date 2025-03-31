@@ -35,7 +35,7 @@ public class EmployeeTempService {
 
         // null이 아닌 필드만 업데이트
         if (dto.getPersonName() != null) employee.setPersonName(dto.getPersonName());
-        if (dto.getType() != null) employee.setType(dto.getType());
+        if (dto.getType() != null) employee.setPersonTypeName(dto.getType());
         if (dto.getOrganizationName() != null) employee.setOrganizationName(dto.getOrganizationName());
         if (dto.getGradeName() != null) employee.setGradeName(dto.getGradeName());
         if (dto.getRepGradeName() != null) employee.setRepGradeName(dto.getRepGradeName());
