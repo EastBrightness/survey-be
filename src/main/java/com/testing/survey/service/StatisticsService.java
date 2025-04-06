@@ -6,10 +6,7 @@ import com.testing.survey.entity.SurveyResponse;
 import com.testing.survey.entity.eval.EvaluationPeriod;
 import com.testing.survey.entity.temp.EmployeeTemp;
 import com.testing.survey.entity.temp.OrganizationTemp;
-import com.testing.survey.repository.StatisticsEmployeeRepository;
-import com.testing.survey.repository.StatisticsEvaluationPeriodRepository;
-import com.testing.survey.repository.StatisticsOrganizationRepository;
-import com.testing.survey.repository.StatisticsSurveyResponseRepository;
+import com.testing.survey.repository.*;
 import com.testing.survey.util.ExcelUtility;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,6 +25,8 @@ public class StatisticsService {
     private final StatisticsEmployeeRepository employeeRepository;
     private final StatisticsOrganizationRepository organizationRepository;
     private final StatisticsSurveyResponseRepository surveyResponseRepository;
+    private final SurveyResponseRepository realSurveyResponseRepository;
+    private final EvalAssignRepository evalAssignRepository;
 
     // 하위 조직 코드를 재귀적으로 찾아 리스트에 추가하는 헬퍼 메서드
     private void addSubOrganizationCodes(String parentCode, List<String> codes) {
@@ -188,7 +187,8 @@ public class StatisticsService {
         return result;
     }
 
-    // 엑셀 다운로드 메서드
+    // StatisticsService.java의 generateExcelReport 메서드 수정
+
     @Transactional(readOnly = true)
     public byte[] generateExcelReport(StatisticsRequestDTO request) {
         try {
@@ -282,7 +282,7 @@ public class StatisticsService {
                     surveyResponseRepository.calculateQuestionStatisticsBothTypes(periodId)
             );
 
-            // 엑셀 파일 생성
+            // 엑셀 파일 생성 (수정된 버전의 ExcelUtility 사용)
             return ExcelUtility.generateEvaluationStatisticsExcel(
                     filteredEmployees,
                     selfQuestionIds,
@@ -290,7 +290,9 @@ public class StatisticsService {
                     selfResponsesByEmployee,
                     othersResponsesByEmployee,
                     questionStats,
-                    request
+                    request,
+                    realSurveyResponseRepository, // 추가: 백분위 및 카테고리 계산에 필요
+                    evalAssignRepository      // 추가: 타인평가 배정/실시 인원 계산에 필요
             );
         } catch (Exception e) {
             throw new RuntimeException("엑셀 파일 생성 중 오류가 발생했습니다: " + e.getMessage(), e);

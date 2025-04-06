@@ -5,6 +5,9 @@ import com.testing.survey.dto.statistics.StatisticsResponseDTO;
 import com.testing.survey.entity.eval.EvaluationPeriod;
 import com.testing.survey.service.StatisticsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,9 +54,22 @@ public class StatisticsController {
     public ResponseEntity<byte[]> exportExcel(
             @RequestBody StatisticsRequestDTO request
     ) {
-        byte[] excelContent = statisticsService.generateExcelReport(request);
-        return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; filename=evaluation_statistics.xlsx")
-                .body(excelContent);
+        try {
+            byte[] excelContent = statisticsService.generateExcelReport(request);
+
+            // 적절한 응답 헤더 설정
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+            headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=evaluation_statistics.xlsx");
+            headers.setContentLength(excelContent.length);
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(excelContent);
+        } catch (Exception e) {
+            // 오류 로깅
+//            log.error("엑셀 파일 생성 중 오류 발생: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 }
