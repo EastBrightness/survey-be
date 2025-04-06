@@ -61,7 +61,14 @@ public interface EmployeeTempRepository extends JpaRepository<EmployeeTemp, Long
             @Param("selfScore") Double selfScore,
             @Param("othersScore") Double othersScore
     );
+    // 이름과 평가 기간 ID로 직원 검색
+    List<EmployeeTemp> findByPersonNameContainingAndPeriodId(String name, Long periodId);
 
 
+    List<EmployeeTemp> findByPersonNameContaining(String name);
+
+
+    // 직원 번호와 평가 기간으로 직원 정보 조회
+    Optional<EmployeeTemp> findByEmployeeNumberAndPeriodId(String employeeNumber, Long periodId);
 }
 

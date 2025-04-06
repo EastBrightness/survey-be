@@ -27,6 +27,7 @@ public class StatisticsService {
     private final StatisticsSurveyResponseRepository surveyResponseRepository;
     private final SurveyResponseRepository realSurveyResponseRepository;
     private final EvalAssignRepository evalAssignRepository;
+    private final EmployeeTempRepository employeeTempRepository;
 
     // 하위 조직 코드를 재귀적으로 찾아 리스트에 추가하는 헬퍼 메서드
     private void addSubOrganizationCodes(String parentCode, List<String> codes) {
@@ -298,4 +299,82 @@ public class StatisticsService {
             throw new RuntimeException("엑셀 파일 생성 중 오류가 발생했습니다: " + e.getMessage(), e);
         }
     }
-}
+
+    @Transactional(readOnly = true)
+    public byte[] generateExcelReportForEmployee(String employeeNumber, Long periodId) {
+        try {
+            // 직원 정보 조회 - 특정 평가 기간의 정보 가져오기
+            EmployeeTemp employee = employeeTempRepository.findByEmployeeNumberAndPeriodId(employeeNumber, periodId)
+                    .orElseThrow(() -> new RuntimeException("해당 평가 기간의 직원 정보를 찾을 수 없습니다."));
+
+            // 직원 목록에 한 명만 포함
+            List<EmployeeTemp> employees = List.of(employee);
+
+            // 문항별 응답 데이터 가져오기
+            List<SurveyResponse> surveyResponses = surveyResponseRepository.findAllByPeriodId(periodId);
+
+            // 문항 ID를 정렬된 인덱스로 매핑 (자가평가, 타인평가 각각)
+            List<Long> selfQuestionIds = surveyResponses.stream()
+                    .filter(sr -> sr.getEvaluationType() == SurveyResponse.EvaluationType.SELF)
+                    .map(SurveyResponse::getQuestionId)
+                    .distinct()
+                    .sorted()
+                    .collect(Collectors.toList());
+
+            List<Long> othersQuestionIds = surveyResponses.stream()
+                    .filter(sr -> sr.getEvaluationType() == SurveyResponse.EvaluationType.OTHERS)
+                    .map(SurveyResponse::getQuestionId)
+                    .distinct()
+                    .sorted()
+                    .collect(Collectors.toList());
+
+            // 직원별 문항 응답 데이터 매핑
+            Map<String, Map<Long, Integer>> selfResponsesByEmployee = new HashMap<>();
+            Map<String, Map<Long, Integer>> othersResponsesByEmployee = new HashMap<>();
+
+            // 자가평가 응답 데이터 수집
+            List<SurveyResponse> selfResponses = realSurveyResponseRepository
+                    .findByPeriodIdAndRespondentNumberAndEvaluationType(
+                            periodId, employeeNumber, SurveyResponse.EvaluationType.SELF);
+
+            for (SurveyResponse response : selfResponses) {
+                selfResponsesByEmployee
+                        .computeIfAbsent(employeeNumber, k -> new HashMap<>())
+                        .put(response.getQuestionId(), response.getRespondentScore());
+            }
+
+            // 타인평가 응답 데이터 수집
+            List<SurveyResponse> othersResponses = realSurveyResponseRepository
+                    .findByPeriodIdAndTestedNumberAndEvaluationType(
+                            periodId, employeeNumber, SurveyResponse.EvaluationType.OTHERS);
+
+            for (SurveyResponse response : othersResponses) {
+                othersResponsesByEmployee
+                        .computeIfAbsent(employeeNumber, k -> new HashMap<>())
+                        .put(response.getQuestionId(), response.getRespondentScore());
+            }
+
+            // 문항별 통계 (전체 평균)
+            Map<String, Map<String, Double>> questionStats = convertToQuestionMap(
+                    surveyResponseRepository.calculateQuestionStatisticsBothTypes(periodId)
+            );
+
+            // 임시 request 객체 생성 (필요 시 사용)
+            StatisticsRequestDTO dummyRequest = new StatisticsRequestDTO();
+
+            // 엑셀 파일 생성 (동일한 ExcelUtility 사용)
+            return ExcelUtility.generateEvaluationStatisticsExcel(
+                    employees,
+                    selfQuestionIds,
+                    othersQuestionIds,
+                    selfResponsesByEmployee,
+                    othersResponsesByEmployee,
+                    questionStats,
+                    dummyRequest,
+                    realSurveyResponseRepository,
+                    evalAssignRepository
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("엑셀 파일 생성 중 오류가 발생했습니다: " + e.getMessage(), e);
+        }
+    }}
